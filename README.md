@@ -26,6 +26,135 @@ A página possui informações organizadas em tabelas, o que facilita o estudo i
 
 ---
 
+## Sequência de Desenvolvimento (Passo a Passo)
+
+Abaixo está a sequência detalhada que seguiremos para construir o scraper da Wikipédia:
+
+### 1 - conectar ao site
+```python
+import requests
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+resp = requests.get(url)
+print(resp.status_code)
+```
+
+### 2 - fazer a requisição com o user-agent
+```python
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+resp = requests.get(url, headers=headers)
+print(resp.status_code)
+```
+
+### 3 - testar uma sequencia de requisições - spider
+```python
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+for ano in [2006, 2010, 2014, 2018, 2022]:
+    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
+    resp = requests.get(url, headers=headers)
+    print(resp.status_code, ano)
+```
+
+### 4 - carregar o html de cada página e analisar com BeautifulSoup
+```python
+import requests
+from bs4 import BeautifulSoup
+
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+for ano in [2006, 2010, 2014, 2018, 2022]:
+    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
+    resp = requests.get(url, headers=headers)
+    soup = BeautifulSoup(resp.text, "html.parser")
+    print(soup.prettify()[:1000])
+```
+
+### 5 - Analisar o layout da página e inspecionar os elementos com Browser (F12) para identificar padrões na estrutura HTML
+Utilizando as ferramentas de desenvolvedor (F12) na página consolidada `Brasil na Copa do Mundo FIFA`, descobrimos que a tabela com o retrospecto de todas as edições possui a classe CSS `wikitable` e elementos padrão de linha `<tr>` e células `<th>` / `<td>`.
+
+### 6 - filtrar tabelas com BeautifulSoup
+```python
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+resp = requests.get(url, headers=headers)
+soup = BeautifulSoup(resp.text, "html.parser")
+table = soup.find("table", class_="wikitable")
+print(table.prettify()[:1000])
+```
+
+### 7 - extraindo as linhas das tabelas (rows)
+```python
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+resp = requests.get(url, headers=headers)
+soup = BeautifulSoup(resp.text, "html.parser")
+table = soup.find("table", class_="wikitable")
+rows = table.find_all("tr")
+print(rows[:3])
+```
+
+### 8 - efetuando uma limpeza nos dados coletados e armazenando dados mais limpos
+```python
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+resp = requests.get(url, headers=headers)
+soup = BeautifulSoup(resp.text, "html.parser")
+table = soup.find("table", class_="wikitable")
+rows = table.find_all("tr")
+
+dados_limpos = []
+
+for row in rows:
+    celulas = [celula.get_text(strip=True) for celula in row.find_all(["td", "th"])]
+    if len(celulas) >= 9:
+        ano = celulas[0].split("[")[0].strip() # Limpa notas de rodapé como 1950[ii]
+        jogos = celulas[3].strip()
+        
+        # Ignora cabeçalhos, totais e edições futuras "A definir"
+        if ano != "Ano" and "Total" not in ano and jogos.isdigit():
+            dados_limpos.append({
+                "ano": int(ano),
+                "fase": celulas[1].strip(),
+                "posicao": celulas[2].strip(),
+                "jogos": int(jogos),
+                "vitorias": int(celulas[4].strip()),
+                "empates": int(celulas[5].split("[")[0].strip()), # Limpa E[i]
+                "derrotas": int(celulas[6].strip()),
+                "gols_pro": int(celulas[7].strip()),
+                "gols_contra": int(celulas[8].strip())
+            })
+
+print(dados_limpos)
+```
+
+---
+
 # Cronograma dos Rounds
 
 ## 09:00 - 09:10
@@ -158,7 +287,12 @@ headers = {
     "User-Agent": "Mozilla/5.0"
 }
 
-resposta = requests.get(url, headers=headers)
+try:
+    resposta = requests.get(url, headers=headers)
+    resposta.raise_for_status()
+except requests.exceptions.RequestException as e:
+    print(f"Erro ao fazer requisição: {e}")
+    exit(1)
 
 print(resposta.status_code)
 print(resposta.text[:500])
