@@ -1,16 +1,57 @@
-# Coding Dojo: Web Scraping com Python
+# II Dojo de Código: Web Scraping com Python - GruPy Pará
 
-## Desempenho do Brasil nas últimas Copas do Mundo
+## ⚽ Desempenho do Brasil nas últimas Copas do Mundo
 
-## Horário
+**Horário:** 09:00 às 11:30
 
-**09:00 às 11:30**
+---
 
-## Objetivo do Dojo
+## 🥋 O que é um Dojo de Código (Coding Dojo)?
 
-Neste dojo, vamos praticar o fluxo completo de uma coleta de dados na web usando Python.
+O **Coding Dojo** é um encontro de programação onde os participantes se reúnem para praticar e aprender de forma colaborativa. O foco não é apenas concluir o desafio ou criar o código mais rápido, mas sim **aprimorar habilidades**, debater boas práticas de desenvolvimento, trabalhar em equipe e aprender coletivamente em um ambiente seguro de experimentação.
 
-O tema será o **desempenho da Seleção Brasileira nas últimas Copas do Mundo**. A ideia é pesquisar fontes de dados, estudar a estrutura dos sites, executar extrações com `requests` e `BeautifulSoup`, organizar as informações e salvar o resultado em um arquivo CSV.
+Nessa dinâmica:
+- **Programação em Par (Pair Programming)**: Os participantes se revezam no desenvolvimento da solução.
+- **Iterativo e Incremental**: Dividimos o problema maior em passos menores e mais simples.
+- **Aprendizado Coletivo**: Todos contribuem com ideias, tiram dúvidas e compartilham experiências.
+
+---
+
+## 📋 Atividades Realizadas
+
+Durante o dojo, passaremos pelas seguintes etapas estruturadas:
+
+1. **Pesquisa e Inspeção (Rounds 1 e 2)**: Identificar e inspecionar fontes de dados válidas usando ferramentas de desenvolvedor do navegador (F12) para encontrar tabelas de interesse.
+2. **Primeiros Acessos com Python (Round 3)**: Efetuar requisições HTTP e configurar o cabeçalho `User-Agent` para obter o conteúdo das páginas.
+3. **Parse de HTML (Round 4)**: Carregar a estrutura de tags no BeautifulSoup e navegar pelas tabelas da página.
+4. **Extração de Dados (Round 5)**: Ler e mapear as linhas e células desejadas.
+5. **Limpeza e Tratamento de Dados (Round 6)**: Limpar textos, remover caracteres e notas de rodapé, tratar dados ausentes e converter tipos numéricos.
+6. **Cálculo de Métricas e Exportação (Round 7)**: Implementar fórmulas matemáticas simples (como saldo de gols e aproveitamento) e salvar os dados consolidados em formato CSV.
+7. **Retrospectiva**: Discutir o que aprendemos, o que facilitou/dificultou a dinâmica e propor melhorias para próximas edições.
+
+---
+
+## 📚 Tópicos Abordados
+
+No decorrer das atividades, serão estudados e praticados os seguintes assuntos:
+
+- **Conceitos de Web Scraping e Web**:
+  - Funcionamento de requisições HTTP (verbos HTTP, headers, status codes).
+  - Configuração de `User-Agent` para identificação de scripts.
+  - Estruturação de documentos HTML, tags (`table`, `tr`, `td`, `th`) e atributos CSS.
+- **Linguagem Python**:
+  - Manipulação, limpeza e fatiamento de strings (`strip()`, `split()`, concatenação).
+  - Estruturas de dados essenciais (`list`, `dict`, `range`).
+  - Estruturas de repetição (loops com `for`) e desvios condicionais (`if/else`).
+  - Conversões de tipos de dados (casting para `int`, etc.).
+  - Tratamento de exceções e erros (`try/except`).
+- **Bibliotecas Principais**:
+  - `requests`: para consumo de dados via HTTP.
+  - `BeautifulSoup` (da biblioteca `beautifulsoup4`): para parseamento e extração de dados HTML.
+- **Engenharia e Qualidade de Software**:
+  - Programação pareada e rotação de participantes.
+  - Refatoração contínua de código para legibilidade.
+  - Persistência e estruturação de arquivos CSV.
 
 ---
 
