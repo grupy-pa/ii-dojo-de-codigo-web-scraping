@@ -341,9 +341,102 @@ for row in rows:
                 "jogos": int(jogos),
                 "vitorias": int(celulas[4].strip()),
                 "empates": int(celulas[5].split("[")[0].strip()), # Limpa E[i]
-                "derrotas": int(celulas[6].strip()),
-                "gols_pro": int(celulas[7].strip()),
-                "gols_contra": int(celulas[8].strip())
+            ### 9 - calcular métricas de desempenho
+A partir dos dados limpos, podemos calcular novas métricas de desempenho para enriquecer nossa análise:
+- **Pontos**: Vitória vale 3 pontos, empate vale 1 ponto e derrota vale 0.
+- **Saldo de gols**: Gols pró (marcados) menos gols contra (sofridos).
+- **Aproveitamento**: Pontos conquistados divididos pelo total de pontos possíveis (jogos * 3), multiplicado por 100 e arredondado para duas casas decimais.
+
+**Diff em relação ao passo anterior:**
+```diff
+         # Ignora cabeçalhos, totais e edições futuras "A definir"
+         if ano != "Ano" and "Total" not in ano and jogos.isdigit():
+-            dados_limpos.append({
+-                "ano": int(ano),
+-                "fase": celulas[1].strip(),
+-                "posicao": celulas[2].strip(),
+-                "jogos": int(jogos),
+-                "vitorias": int(celulas[4].strip()),
+-                "empates": int(celulas[5].split("[")[0].strip()), # Limpa E[i]
+-                "derrotas": int(celulas[6].strip()),
+-                "gols_pro": int(celulas[7].strip()),
+-                "gols_contra": int(celulas[8].strip())
+-            })
++            vitorias = int(celulas[4].strip())
++            empates = int(celulas[5].split("[")[0].strip())
++            derrotas = int(celulas[6].strip())
++            gols_pro = int(celulas[7].strip())
++            gols_contra = int(celulas[8].strip())
++            
++            pontos = (vitorias * 3) + empates
++            saldo_gols = gols_pro - gols_contra
++            aproveitamento = round((pontos / (int(jogos) * 3)) * 100, 2) if int(jogos) > 0 else 0.0
++
++            dados_limpos.append({
++                "ano": int(ano),
++                "fase": celulas[1].strip(),
++                "posicao": celulas[2].strip(),
++                "jogos": int(jogos),
++                "vitorias": vitorias,
++                "empates": empates,
++                "derrotas": derrotas,
++                "gols_pro": gols_pro,
++                "gols_contra": gols_contra,
++                "pontos": pontos,
++                "saldo_gols": saldo_gols,
++                "aproveitamento": aproveitamento
++            })
+ 
+ print(dados_limpos)
+```
+
+**Código resultante:**
+```python
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+}
+
+resp = requests.get(url, headers=headers)
+soup = BeautifulSoup(resp.text, "html.parser")
+table = soup.find("table", class_="wikitable")
+rows = table.find_all("tr")
+
+dados_limpos = []
+
+for row in rows:
+    celulas = [celula.get_text(strip=True) for celula in row.find_all(["td", "th"])]
+    if len(celulas) >= 9:
+        ano = celulas[0].split("[")[0].strip()
+        jogos = celulas[3].strip()
+        
+        if ano != "Ano" and "Total" not in ano and jogos.isdigit():
+            vitorias = int(celulas[4].strip())
+            empates = int(celulas[5].split("[")[0].strip())
+            derrotas = int(celulas[6].strip())
+            gols_pro = int(celulas[7].strip())
+            gols_contra = int(celulas[8].strip())
+            
+            pontos = (vitorias * 3) + empates
+            saldo_gols = gols_pro - gols_contra
+            aproveitamento = round((pontos / (int(jogos) * 3)) * 100, 2) if int(jogos) > 0 else 0.0
+
+            dados_limpos.append({
+                "ano": int(ano),
+                "fase": celulas[1].strip(),
+                "posicao": celulas[2].strip(),
+                "jogos": int(jogos),
+                "vitorias": vitorias,
+                "empates": empates,
+                "derrotas": derrotas,
+                "gols_pro": gols_pro,
+                "gols_contra": gols_contra,
+                "pontos": pontos,
+                "saldo_gols": saldo_gols,
+                "aproveitamento": aproveitamento
             })
 
 print(dados_limpos)
@@ -351,394 +444,109 @@ print(dados_limpos)
 
 ---
 
-# Cronograma dos Rounds
+### 10 - salvar os dados em formato CSV
+Finalmente, importamos o módulo `csv` para salvar nossa lista de dicionários contendo os dados tratados e as métricas calculadas em um arquivo local estruturado em colunas.
 
-## 09:00 - 09:10
-
-# Abertura do Dojo
-
-## Objetivo
-
-Apresentar o tema, explicar a dinâmica do dojo e alinhar o resultado esperado.
-
-## Explicação
-
-Antes de começar a escrever código, o grupo deve entender o problema: queremos coletar dados sobre o desempenho do Brasil nas últimas Copas do Mundo e transformar essas informações em uma base organizada.
-
-## Resultado esperado
-
-Todos devem entender o objetivo final:
-
-```text
-Encontrar uma fonte de dados
-Estudar a página
-Extrair informações
-Limpar os dados
-Salvar em CSV
+**Diff em relação ao passo anterior:**
+```diff
++import csv
+ import requests
+ from bs4 import BeautifulSoup
+ 
+@@ -46,4 +47,15 @@ for row in rows:
+                 "saldo_gols": saldo_gols,
+                 "aproveitamento": aproveitamento
+             })
+ 
+-print(dados_limpos)
++print(f"Total de registros coletados: {len(dados_limpos)}")
++if dados_limpos:
++    print("\nRegistros coletados por ano:")
++    for registro in dados_limpos:
++        print(f"Copa de {registro['ano']}: {registro}")
++
++    with open("brasil_copas.csv", mode="w", encoding="utf-8", newline="") as f:
++        campos = ["ano", "fase", "posicao", "jogos", "vitorias", "empates", "derrotas", "gols_pro", "gols_contra", "pontos", "saldo_gols", "aproveitamento"]
++        writer = csv.DictWriter(f, fieldnames=campos)
++        writer.writeheader()
++        writer.writerows(dados_limpos)
++    print("\nDados salvos com sucesso em 'brasil_copas.csv'!")
 ```
 
----
-
-## 09:10 - 09:30
-
-# ROUND 1: Pesquisar fontes de dados
-
-## Objetivo
-
-Encontrar páginas que tenham dados sobre o Brasil nas Copas do Mundo.
-
-## Explicação
-
-Web scraping começa antes do código. Primeiro precisamos descobrir onde os dados estão disponíveis e se a fonte é adequada para coleta.
-
-## Tarefas
-
-```text
-Pesquisar páginas sobre o Brasil nas Copas
-Comparar possíveis fontes
-Verificar se os dados estão visíveis na página
-Identificar se existem tabelas ou listas
-Escolher a fonte principal do dojo
-```
-
-## Perguntas para guiar
-
-```text
-O site está em português?
-Os dados aparecem diretamente na página?
-Existe tabela HTML?
-Precisa de login?
-O conteúdo carrega com JavaScript?
-A página parece boa para usar com requests e BeautifulSoup?
-```
-
-## Resultado esperado
-
-Escolher uma fonte principal de dados para a extração.
-
----
-
-## 09:30 - 09:50
-
-# ROUND 2: Estudar a estrutura do site
-
-## Objetivo
-
-Entender como os dados estão organizados dentro da página.
-
-## Explicação
-
-Depois de escolher a fonte, o grupo deve estudar a estrutura HTML da página. O objetivo é encontrar onde estão as tabelas, linhas, colunas e informações úteis.
-
-## Tarefas
-
-```text
-Abrir a página no navegador
-Usar a opção Inspecionar
-Localizar as tabelas da página
-Identificar quais dados serão coletados
-Anotar os nomes das colunas importantes
-```
-
-## Dados desejados
-
-```text
-Ano
-Fase
-Posição
-Jogos
-Vitórias
-Empates
-Derrotas
-Gols marcados
-Gols sofridos
-```
-
-## Resultado esperado
-
-Saber qual tabela ou seção da página contém os dados que serão raspados.
-
----
-
-## 09:50 - 10:10
-
-# ROUND 3: Fazer a primeira requisição com requests
-
-## Objetivo
-
-Acessar a página usando Python.
-
-## Explicação
-
-Neste round, o grupo começa a parte prática. Vamos usar a biblioteca `requests` para baixar o HTML da página escolhida.
-
-## Exemplo
-
-```python
-import requests
-
-url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
-
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
-
-try:
-    resposta = requests.get(url, headers=headers)
-    resposta.raise_for_status()
-except requests.exceptions.RequestException as e:
-    print(f"Erro ao fazer requisição: {e}")
-    exit(1)
-
-print(resposta.status_code)
-print(resposta.text[:500])
-```
-
-## Tarefas
-
-```text
-Fazer a requisição HTTP
-Verificar o status da resposta
-Exibir uma parte do HTML
-Confirmar se a página foi carregada corretamente
-```
-
-## Resultado esperado
-
-A página deve ser acessada com sucesso pelo Python.
-
----
-
-## 10:10 - 10:30
-
-# ROUND 4: Encontrar as tabelas com BeautifulSoup
-
-## Objetivo
-
-Usar BeautifulSoup para localizar as tabelas da página.
-
-## Explicação
-
-Com o HTML carregado, vamos usar `BeautifulSoup` para navegar pela estrutura da página e encontrar os elementos que contêm os dados.
-
-## Exemplo
-
-```python
-from bs4 import BeautifulSoup
-
-soup = BeautifulSoup(resposta.text, "html.parser")
-
-tabelas = soup.find_all("table")
-
-print(f"Total de tabelas encontradas: {len(tabelas)}")
-```
-
-## Tarefas
-
-```text
-Criar o objeto BeautifulSoup
-Buscar todas as tabelas da página
-Exibir a quantidade de tabelas encontradas
-Inspecionar o conteúdo das primeiras tabelas
-Identificar a tabela correta
-```
-
-## Resultado esperado
-
-Encontrar a tabela que contém os dados do desempenho do Brasil nas Copas.
-
----
-
-## 10:30 - 10:50
-
-# ROUND 5: Executar a extração dos dados
-
-## Objetivo
-
-Extrair os dados da tabela escolhida.
-
-## Explicação
-
-Neste round, vamos percorrer as linhas da tabela e transformar os dados em uma lista de dicionários.
-
-## Exemplo de estrutura
-
-```python
-dados = []
-
-for linha in linhas:
-    registro = {
-        "ano": "",
-        "fase": "",
-        "jogos": "",
-        "vitorias": "",
-        "empates": "",
-        "derrotas": "",
-        "gols_marcados": "",
-        "gols_sofridos": ""
-    }
-
-    dados.append(registro)
-```
-
-## Tarefas
-
-```text
-Percorrer as linhas da tabela
-Extrair as células de cada linha
-Remover espaços extras
-Criar um dicionário para cada Copa
-Guardar os registros em uma lista
-```
-
-## Resultado esperado
-
-Uma lista com os dados brutos das participações do Brasil nas Copas.
-
----
-
-## 10:50 - 11:05
-
-# ROUND 6: Limpar e organizar os dados
-
-## Objetivo
-
-Preparar os dados para análise.
-
-## Explicação
-
-Dados extraídos da web geralmente precisam de limpeza. Podemos encontrar quebras de linha, textos extras, símbolos e números em formato de texto.
-
-## Tarefas
-
-```text
-Padronizar nomes das colunas
-Remover quebras de linha
-Remover espaços extras
-Converter números
-Tratar campos vazios
-Filtrar apenas as últimas Copas
-```
-
-## Copas sugeridas para análise
-
-Todas as edições de 1970 a 2022 (de 4 em 4 anos).
-
-## Resultado esperado
-
-Uma base organizada contendo apenas os dados das últimas Copas do Mundo.
-
----
-
-## 11:05 - 11:20
-
-# ROUND 7: Calcular métricas e salvar em CSV
-
-## Objetivo
-
-Criar métricas simples de desempenho e salvar os dados em CSV.
-
-## Explicação
-
-Depois da limpeza, podemos calcular novas informações para analisar melhor o desempenho do Brasil.
-
-## Métricas sugeridas
-
-```text
-Pontos
-Saldo de gols
-Média de gols marcados
-Média de gols sofridos
-Aproveitamento
-```
-
-## Regras
-
-```text
-Vitória = 3 pontos
-Empate = 1 ponto
-Derrota = 0 pontos
-```
-
-## Fórmulas
-
-```text
-pontos = (vitórias * 3) + empates
-
-saldo_de_gols = gols_marcados - gols_sofridos
-
-aproveitamento = pontos / (jogos * 3) * 100
-```
-
-## Exemplo para salvar em CSV (Biblioteca Padrão)
-
+**Código resultante (Script Completo):**
 ```python
 import csv
+import requests
+from bs4 import BeautifulSoup
 
-campos = ["ano", "fase", "posicao", "jogos", "vitorias", "empates", "derrotas", "gols_pro", "gols_contra", "pontos", "saldo_gols", "aproveitamento"]
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+headers = {
+    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11",
+    "Accept": "*/*"
+}
 
-with open("brasil_copas.csv", mode="w", encoding="utf-8", newline="") as f:
-    writer = csv.DictWriter(f, fieldnames=campos)
-    writer.writeheader()
-    writer.writerows(dados)
+resp = requests.get(url, headers=headers)
+print("Status Code:", resp.status_code)
+
+dados_limpos = []
+
+if resp.status_code == 200:
+    soup = BeautifulSoup(resp.text, "html.parser")
+    table = soup.find("table", class_="wikitable")
+    
+    if table:
+        rows = table.find_all("tr")
+        for row in rows:
+            celulas = [celula.get_text(strip=True) for celula in row.find_all(["td", "th"])]
+            
+            if len(celulas) >= 9:
+                ano = celulas[0].split("[")[0].strip()
+                jogos = celulas[3].strip()
+                
+                if ano != "Ano" and "Total" not in ano and jogos.isdigit():
+                    vitorias = int(celulas[4].strip())
+                    empates = int(celulas[5].split("[")[0].strip())
+                    derrotas = int(celulas[6].strip())
+                    gols_pro = int(celulas[7].strip())
+                    gols_contra = int(celulas[8].strip())
+                    
+                    pontos = (vitorias * 3) + empates
+                    saldo_gols = gols_pro - gols_contra
+                    aproveitamento = round((pontos / (int(jogos) * 3)) * 100, 2) if int(jogos) > 0 else 0.0
+
+                    dados_limpos.append({
+                        "ano": int(ano),
+                        "fase": celulas[1].strip(),
+                        "posicao": celulas[2].strip(),
+                        "jogos": int(jogos),
+                        "vitorias": vitorias,
+                        "empates": empates,
+                        "derrotas": derrotas,
+                        "gols_pro": gols_pro,
+                        "gols_contra": gols_contra,
+                        "pontos": pontos,
+                        "saldo_gols": saldo_gols,
+                        "aproveitamento": aproveitamento
+                    })
+
+print(f"Total de registros coletados: {len(dados_limpos)}")
+if dados_limpos:
+    print("\nRegistros coletados por ano:")
+    for registro in dados_limpos:
+        print(f"Copa de {registro['ano']}: {registro}")
+
+    with open("brasil_copas.csv", mode="w", encoding="utf-8", newline="") as f:
+        campos = [
+            "ano", "fase", "posicao", "jogos", "vitorias", "empates", "derrotas", 
+            "gols_pro", "gols_contra", "pontos", "saldo_gols", "aproveitamento"
+        ]
+        writer = csv.DictWriter(f, fieldnames=campos)
+        writer.writeheader()
+        writer.writerows(dados_limpos)
+    
+    print("\nDados salvos com sucesso em 'brasil_copas.csv'!")
 ```
-
-## Resultado esperado
-
-Gerar um arquivo:
-
-```text
-brasil_copas.csv
-```
-
-contendo os dados tratados e as métricas calculadas.
 
 ---
-
-## 11:20 - 11:30
-
-# Encerramento e retrospectiva
-
-## Objetivo
-
-Revisar o que foi feito e discutir melhorias.
-
-## Explicação
-
-O encerramento serve para consolidar o aprendizado. O grupo deve refletir sobre o processo completo: desde a pesquisa da fonte até a geração do CSV.
-
-## Perguntas para discussão
-
-```text
-A fonte escolhida foi boa?
-O que facilitou a extração?
-O que dificultou a extração?
-O que poderia quebrar esse scraper no futuro?
-Como deixar o código mais organizado?
-Como salvar também em JSON?
-Como transformar esses dados em gráficos?
-Como criar uma API com esses dados?
-```
-
-## Resultado esperado
-
-O grupo finaliza o dojo com um arquivo CSV gerado e uma visão clara do processo de web scraping.
-
----
-
-# Resultado final esperado
-
-Ao final do dojo, o grupo terá praticado:
-
-```text
-Pesquisa de fontes de dados
-Estudo da estrutura de sites
-Uso de requests
-Uso de BeautifulSoup
-Extração de tabelas HTML
-Limpeza de dados
-Cálculo de métricas
-Exportação para CSV
-```
 
 O objetivo principal é entender que web scraping não é apenas extrair dados, mas seguir um processo completo: pesquisar, avaliar, coletar, limpar, organizar e salvar informações de forma útil.
