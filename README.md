@@ -28,9 +28,14 @@ A página possui informações organizadas em tabelas, o que facilita o estudo i
 
 ## Sequência de Desenvolvimento (Passo a Passo)
 
-Abaixo está a sequência detalhada que seguiremos para construir o scraper da Wikipédia:
+Abaixo está a sequência detalhada que seguiremos para construir o scraper da Wikipédia, mostrando o código resultante e o **diff** (linhas com `+` indicam o que adicionar, e `-` o que remover) para orientar o aluno em cada passo.
+
+---
 
 ### 1 - conectar ao site
+Criamos a primeira versão do script para simplesmente disparar uma requisição HTTP.
+
+**Código resultante:**
 ```python
 import requests
 
@@ -39,8 +44,28 @@ resp = requests.get(url)
 print(resp.status_code)
 ```
 
+---
+
 ### 2 - fazer a requisição com o user-agent
+Muitas páginas retornam erros ou bloqueiam requisições genéricas (como o cabeçalho padrão da biblioteca python-requests). Contornamos isso adicionando um `User-Agent`.
+
+**Diff em relação ao passo anterior:**
+```diff
+ import requests
+ 
+ url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+-resp = requests.get(url)
++headers = {
++    "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
++}
++resp = requests.get(url, headers=headers)
+ print(resp.status_code)
+```
+
+**Código resultante:**
 ```python
+import requests
+
 url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
 headers = {
     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
@@ -49,8 +74,32 @@ resp = requests.get(url, headers=headers)
 print(resp.status_code)
 ```
 
+---
+
 ### 3 - testar uma sequencia de requisições - spider
+Para compreender como percorrer várias páginas (como se estivéssemos raspando dados sequenciais), podemos testar um loop sobre as edições de Copa do Mundo.
+
+**Diff em relação ao passo anterior:**
+```diff
+ import requests
+ 
+-url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+ headers = {
+     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+ }
+-resp = requests.get(url, headers=headers)
+-print(resp.status_code)
++
++for ano in [2006, 2010, 2014, 2018, 2022]:
++    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
++    resp = requests.get(url, headers=headers)
++    print(resp.status_code, ano)
+```
+
+**Código resultante:**
 ```python
+import requests
+
 headers = {
     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
 }
@@ -61,7 +110,29 @@ for ano in [2006, 2010, 2014, 2018, 2022]:
     print(resp.status_code, ano)
 ```
 
+---
+
 ### 4 - carregar o html de cada página e analisar com BeautifulSoup
+Carregamos o corpo do HTML usando a biblioteca BeautifulSoup de forma que possamos analisá-lo e imprimi-lo de forma legível (prettify).
+
+**Diff em relação ao passo anterior:**
+```diff
+ import requests
++from bs4 import BeautifulSoup
+ 
+ headers = {
+     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+ }
+ 
+ for ano in [2006, 2010, 2014, 2018, 2022]:
+     url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
+     resp = requests.get(url, headers=headers)
+-    print(resp.status_code, ano)
++    soup = BeautifulSoup(resp.text, "html.parser")
++    print(soup.prettify()[:1000])
+```
+
+**Código resultante:**
 ```python
 import requests
 from bs4 import BeautifulSoup
@@ -77,10 +148,38 @@ for ano in [2006, 2010, 2014, 2018, 2022]:
     print(soup.prettify()[:1000])
 ```
 
+---
+
 ### 5 - Analisar o layout da página e inspecionar os elementos com Browser (F12) para identificar padrões na estrutura HTML
-Utilizando as ferramentas de desenvolvedor (F12) na página consolidada `Brasil na Copa do Mundo FIFA`, descobrimos que a tabela com o retrospecto de todas as edições possui a classe CSS `wikitable` e elementos padrão de linha `<tr>` e células `<th>` / `<td>`.
+Utilizando a ferramenta Inspecionar (F12) no navegador, navegamos até a tabela principal de participações na página consolidada `Brasil na Copa do Mundo FIFA`. Vemos que a tabela possui a classe CSS `wikitable` e cada linha da tabela é definida por `<tr>` com células em `<th>` (cabeçalho) ou `<td>` (dados).
+
+---
 
 ### 6 - filtrar tabelas com BeautifulSoup
+Como faremos a extração a partir da tabela histórica consolidada, voltamos a nossa requisição para a página principal do Brasil e filtramos apenas a tabela que possui a classe `wikitable`.
+
+**Diff em relação ao passo anterior:**
+```diff
+ import requests
+ from bs4 import BeautifulSoup
+ 
++url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+ headers = {
+     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
+ }
+ 
+-for ano in [2006, 2010, 2014, 2018, 2022]:
+-    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
+-    resp = requests.get(url, headers=headers)
+-    soup = BeautifulSoup(resp.text, "html.parser")
+-    print(soup.prettify()[:1000])
++resp = requests.get(url, headers=headers)
++soup = BeautifulSoup(resp.text, "html.parser")
++table = soup.find("table", class_="wikitable")
++print(table.prettify()[:1000])
+```
+
+**Código resultante:**
 ```python
 import requests
 from bs4 import BeautifulSoup
@@ -96,7 +195,22 @@ table = soup.find("table", class_="wikitable")
 print(table.prettify()[:1000])
 ```
 
+---
+
 ### 7 - extraindo as linhas das tabelas (rows)
+A partir da tabela identificada, extraímos todas as linhas (`<tr>`).
+
+**Diff em relação ao passo anterior:**
+```diff
+ resp = requests.get(url, headers=headers)
+ soup = BeautifulSoup(resp.text, "html.parser")
+ table = soup.find("table", class_="wikitable")
+-print(table.prettify()[:1000])
++rows = table.find_all("tr")
++print(rows[:3])
+```
+
+**Código resultante:**
 ```python
 import requests
 from bs4 import BeautifulSoup
@@ -113,7 +227,48 @@ rows = table.find_all("tr")
 print(rows[:3])
 ```
 
+---
+
 ### 8 - efetuando uma limpeza nos dados coletados e armazenando dados mais limpos
+Limpamos as quebras de linha e referências/notas de rodapé de texto da Wikipédia (ex: `1950[ii]` vira `1950` e `E[i]` vira `E`), descartamos as linhas inúteis da tabela (como cabeçalhos redundantes, anos futuros a definir e a linha total de sumário) e montamos nossa lista de dicionários limpos convertendo os valores numéricos para inteiros.
+
+**Diff em relação ao passo anterior:**
+```diff
+ resp = requests.get(url, headers=headers)
+ soup = BeautifulSoup(resp.text, "html.parser")
+ table = soup.find("table", class_="wikitable")
+ rows = table.find_all("tr")
+-print(rows[:3])
++
++dados_limpos = []
++
++for row in rows:
++    # Extrai o texto de todas as células da linha
++    celulas = [celula.get_text(strip=True) for celula in row.find_all(["td", "th"])]
++    
++    # Filtra apenas linhas com dados válidos da tabela
++    if len(celulas) >= 9:
++        ano = celulas[0].split("[")[0].strip() # Limpa notas de rodapé como 1950[ii]
++        jogos = celulas[3].strip()
++        
++        # Ignora cabeçalhos, totais e edições futuras
++        if ano != "Ano" and "Total" not in ano and jogos.isdigit():
++            dados_limpos.append({
++                "ano": int(ano),
++                "fase": celulas[1].strip(),
++                "posicao": celulas[2].strip(),
++                "jogos": int(jogos),
++                "vitorias": int(celulas[4].strip()),
++                "empates": int(celulas[5].split("[")[0].strip()), # Limpa E[i]
++                "derrotas": int(celulas[6].strip()),
++                "gols_pro": int(celulas[7].strip()),
++                "gols_contra": int(celulas[8].strip())
++            })
++
++print(dados_limpos)
+```
+
+**Código resultante:**
 ```python
 import requests
 from bs4 import BeautifulSoup
