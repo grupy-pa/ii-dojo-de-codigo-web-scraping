@@ -90,7 +90,7 @@ Para compreender como percorrer várias páginas (como se estivéssemos raspando
 -resp = requests.get(url, headers=headers)
 -print(resp.status_code)
 +
-+for ano in [2006, 2010, 2014, 2018, 2022]:
++for ano in range(1970, 2023, 4):
 +    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
 +    resp = requests.get(url, headers=headers)
 +    print(resp.status_code, ano)
@@ -104,7 +104,7 @@ headers = {
     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
 }
 
-for ano in [2006, 2010, 2014, 2018, 2022]:
+for ano in range(1970, 2023, 4):
     url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
     resp = requests.get(url, headers=headers)
     print(resp.status_code, ano)
@@ -124,7 +124,7 @@ Carregamos o corpo do HTML usando a biblioteca BeautifulSoup de forma que possam
      "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
  }
  
- for ano in [2006, 2010, 2014, 2018, 2022]:
+ for ano in range(1970, 2023, 4):
      url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
      resp = requests.get(url, headers=headers)
 -    print(resp.status_code, ano)
@@ -141,7 +141,7 @@ headers = {
     "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
 }
 
-for ano in [2006, 2010, 2014, 2018, 2022]:
+for ano in range(1970, 2023, 4):
     url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
     resp = requests.get(url, headers=headers)
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -168,7 +168,7 @@ Como faremos a extração a partir da tabela histórica consolidada, voltamos a 
      "User-Agent": "GruPy Pará II Dojo De Códigos - Python 3.11.11"
  }
  
--for ano in [2006, 2010, 2014, 2018, 2022]:
+-for ano in range(1970, 2023, 4):
 -    url = f"https://pt.wikipedia.org/wiki/Copa_do_Mundo_FIFA_de_{ano}"
 -    resp = requests.get(url, headers=headers)
 -    soup = BeautifulSoup(resp.text, "html.parser")
@@ -581,13 +581,7 @@ Filtrar apenas as últimas Copas
 
 ## Copas sugeridas para análise
 
-```text
-2006
-2010
-2014
-2018
-2022
-```
+Todas as edições de 1970 a 2022 (de 4 em 4 anos).
 
 ## Resultado esperado
 
