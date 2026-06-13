@@ -30,12 +30,12 @@ O evento foi estruturado de forma milimétrica para começarmos pontualmente às
 | Horário | Atividade | Duração | Descrição |
 | :--- | :--- | :---: | :--- |
 | **09:00 - 09:15** | **Abertura & Introdução** | 15 min | Boas-vindas, explicação da dinâmica Randori, apresentação do desafio e divisão de papéis. |
-| **09:15 - 09:35** | **Round 1: Setup & Requisição** | 20 min | Inicialização do ambiente virtual (`venv`), instalação de bibliotecas e disparo da primeira requisição HTTP. |
-| **09:35 - 09:55** | **Round 2: Parseando o HTML** | 20 min | Carregamento do HTML bruto com BeautifulSoup e mapeamento da estrutura DOM da tabela. |
-| **09:55 - 10:15** | **Round 3: Extração & Limpeza** | 20 min | Iteração sobre as linhas da tabela, captura dos dados dos times e conversão de strings para tipos adequados (inteiros). |
+| **09:15 - 09:35** | **Round 1: Coleta de dados de páginas web** | 20 min | Inicialização do ambiente virtual (`venv`), instalação de dependências e disparo da primeira requisição HTTP para obter o HTML. |
+| **09:35 - 09:55** | **Round 2: Identificação de tabelas e informações úteis** | 20 min | Mapeamento da estrutura DOM da tabela oficial do campeonato usando BeautifulSoup. |
+| **09:55 - 10:15** | **Round 3: Limpeza e organização dos dados** | 20 min | Iteração sobre as linhas da tabela, captura e higienização dos dados e conversão para tipos corretos. |
 | **10:15 - 10:27** | **☕ Intervalo / Break** | **12 min** | **Folga para café, descanso mental e bate-papo entre os participantes.** |
-| **10:27 - 10:52** | **Round 4: Métricas & Ordenação** | 25 min | Cálculo de Pontos, Saldo de Gols e Aproveitamento (%) e ordenação da classificação sob critérios oficiais de desempate. |
-| **10:52 - 11:12** | **Round 5: Exportação (CSV/JSON)** | 20 min | Escrita dos dados processados em arquivos físicos JSON e CSV usando codificação UTF-8. |
+| **10:27 - 10:52** | **Round 4: Cálculo de métricas (pontos, saldo de gols e aproveitamento)** | 25 min | Cálculo de Pontos, Saldo de Gols e Aproveitamento (%) e ordenação da classificação sob critérios oficiais de desempate. |
+| **10:52 - 11:12** | **Round 5: Exportação dos dados em CSV ou JSON** | 20 min | Escrita dos dados processados em arquivos físicos JSON e CSV usando codificação UTF-8. |
 | **11:12 - 11:30** | **Retrospectiva & Encerramento** | 18 min | Feedback em grupo (o que deu certo / o que melhorar), fechamento das refatorações e foto oficial. |
 
 ---
@@ -44,15 +44,15 @@ O evento foi estruturado de forma milimétrica para começarmos pontualmente às
 
 ```mermaid
 graph TD
-    R1[Round 1: Setup & Conexão] --> R2[Round 2: Parseamento do DOM]
-    R2 --> R3[Round 3: Extração & Limpeza]
+    R1[Round 1: Coleta de dados de páginas web] --> R2[Round 2: Identificação de tabelas e informações úteis]
+    R2 --> R3[Round 3: Limpeza e organização dos dados]
     R3 --> Break{☕ Break de 12 min}
-    Break --> R4[Round 4: Métricas & Classificação]
-    R4 --> R5[Round 5: Exportação CSV/JSON]
+    Break --> R4[Round 4: Cálculo de métricas e ordenação]
+    R4 --> R5[Round 5: Exportação dos dados em CSV ou JSON]
 ```
 
-### 🔹 Round 1: Setup do Ambiente e Conexão (09:15 - 09:35)
-* **Objetivo:** Criar a estrutura do ambiente virtual e conseguir obter o HTML bruto.
+### 🔹 Round 1: Coleta de dados de páginas web (09:15 - 09:35)
+* **Objetivo:** Criar a estrutura do ambiente virtual e conseguir obter o HTML bruto de uma URL ou de arquivo local.
 * **Foco:** Biblioteca `requests`.
 * **Atividades:**
   1. Ativar o ambiente virtual e instalar dependências via `pip install -r requirements.txt`.
@@ -60,7 +60,7 @@ graph TD
   3. Fazer com que o script leia de forma inteligente: se receber uma URL (`http...`), faz uma chamada de rede; se receber um caminho local, lê o arquivo `static/parazao.html` diretamente (garantindo que o dojo funcione perfeitamente mesmo offline).
   4. Rodar o teste correspondente: `PYTHONPATH=. pytest tests/test_scraper.py -k test_obter_html_local`.
 
-### 🔹 Round 2: Parseando o HTML (09:35 - 09:55)
+### 🔹 Round 2: Identificação de tabelas e informações úteis (09:35 - 09:55)
 * **Objetivo:** Inspecionar a estrutura do documento e mapear a tabela de estatísticas.
 * **Foco:** Biblioteca `beautifulsoup4`.
 * **Atividades:**
@@ -68,7 +68,7 @@ graph TD
   2. Identificar a tag `table` com o id `tabela-estatisticas`.
   3. Começar a implementar a função `parsear_tabela` em `src/scraper.py`, buscando o elemento correspondente e encontrando o corpo da tabela (`<tbody>`).
 
-### 🔹 Round 3: Extração e Limpeza dos Dados (09:55 - 10:15)
+### 🔹 Round 3: Limpeza e organização dos dados (09:55 - 10:15)
 * **Objetivo:** Varrer cada time da tabela e estruturar suas informações básicas em memória.
 * **Foco:** Manipulação de strings, controle de fluxo e casting de tipos.
 * **Atividades:**
@@ -80,7 +80,7 @@ graph TD
   3. Converter as estatísticas numéricas extraídas de string para inteiros (`int`).
   4. Rodar o teste correspondente para validar o parsing: `PYTHONPATH=. pytest tests/test_scraper.py -k test_parsear_tabela`.
 
-### 🔹 Round 4: Cálculo de Métricas e Ordenação (10:27 - 10:52)
+### 🔹 Round 4: Cálculo de métricas (pontos, saldo de gols e aproveitamento) (10:27 - 10:52)
 * **Objetivo:** Processar os dados brutos calculando métricas de classificação esportiva e ordenar os times de forma correta.
 * **Foco:** Lógica matemática e ordenação customizada (`sorted()` com `key`).
 * **Atividades:**
@@ -96,7 +96,7 @@ graph TD
   4. Atribuir a posição final (de 1 a 10) baseada na ordenação obtida.
   5. Validar o algoritmo rodando o teste: `PYTHONPATH=. pytest tests/test_scraper.py -k test_calcular_metricas_e_ordenar`.
 
-### 🔹 Round 5: Exportação dos Resultados (10:52 - 11:12)
+### 🔹 Round 5: Exportação dos dados em CSV ou JSON (10:52 - 11:12)
 * **Objetivo:** Persistir os dados processados e estruturados em disco.
 * **Foco:** Módulos `json` e `csv` nativos do Python.
 * **Atividades:**

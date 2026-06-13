@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 def obter_html(url_ou_caminho: str) -> str:
     """
-    Round 1: Setup e Primeira Requisição
+    Round 1: Coleta de dados de páginas web
     Obtém o conteúdo HTML de uma URL (via requests) ou de um arquivo local.
     
     DICA: Se a string começar com 'http://' ou 'https://', use requests.get().
@@ -17,7 +17,9 @@ def obter_html(url_ou_caminho: str) -> str:
 
 def parsear_tabela(html: str) -> list:
     """
-    Rounds 2 e 3: Parsing HTML e Extração/Limpeza de Dados
+    Round 2: Identificação de tabelas e informações úteis
+    Round 3: Limpeza e organização dos dados
+    
     Recebe o HTML cru, localiza a tabela '#tabela-estatisticas',
     e extrai os dados brutos de cada time.
     
@@ -41,7 +43,7 @@ def parsear_tabela(html: str) -> list:
 
 def calcular_metricas_e_ordenar(dados_brutos: list) -> list:
     """
-    Round 4: Cálculo de Métricas e Ordenação
+    Round 4: Cálculo de métricas (pontos, saldo de gols e aproveitamento)
     Recebe a lista de dados brutos e para cada time calcula:
     - pontos: (vitorias * 3) + empates
     - saldo_gols: gols_pro - gols_contra
@@ -59,7 +61,7 @@ def calcular_metricas_e_ordenar(dados_brutos: list) -> list:
 
 def exportar_dados(dados: list, caminho_arquivo: str, formato: str = "json") -> None:
     """
-    Round 5: Exportação dos Dados (CSV/JSON)
+    Round 5: Exportação dos dados em CSV ou JSON
     Salva os dados finais em um arquivo JSON ou CSV, dependendo do formato solicitado.
     Assegure-se de que a codificação seja UTF-8.
     """
