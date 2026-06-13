@@ -1,176 +1,417 @@
-# II Dojo de Código - GruPy Pará: Web Scraping com Python 🕸️⚽
+# Coding Dojo: Web Scraping com Python
 
-Bem-vindo ao repositório do **II Dojo de Código do GruPy Pará**! 
+## Desempenho do Brasil nas últimas Copas do Mundo
 
-Nesta edição, nosso foco será prático e voltado para **Web Scraping (Coleta Automatizada de Dados)** usando Python. Vamos raspar uma tabela com dados do Campeonato Paraense (Parazão), realizar a limpeza e tratamento desses dados, computar métricas esportivas (Pontos, Saldo de Gols, Aproveitamento), ordenar a tabela sob os critérios oficiais de desempate e exportar o resultado final em formatos estruturados (JSON e CSV).
+## Horário
 
----
+**09:00 às 11:30**
 
-## 📌 O que é um Coding Dojo?
+## Objetivo do Dojo
 
-O **Coding Dojo** é um encontro colaborativo onde pessoas interessadas em programação se reúnem para praticar e melhorar suas habilidades de desenvolvimento de forma segura e divertida.
+Neste dojo, vamos praticar o fluxo completo de uma coleta de dados na web usando Python.
 
-* **Foco no Aprendizado:** Não há competição. O objetivo é a troca de conhecimentos, refatoração de código e boas práticas (como TDD, Clean Code e modularização).
-* **Ambiente Seguro:** Erros não são punidos. Pelo contrário: errar rápido ajuda a aprender mais rápido.
-* **Dinâmica Randori:**
-  * Um computador central é projetado para todos verem.
-  * Dois participantes sentam-se à frente: o **Piloto** (quem digita e explica o raciocínio) e o **Copiloto** (quem apoia, dá ideias e ajuda a evitar erros).
-  * A plateia acompanha em silêncio (só ajuda quando solicitada pelos pilotos).
-  * **Rodadas de Rotação (Ciclos de Teclado):** Com **105 minutos** de programação ativa, definimos as seguintes rodadas recomendadas conforme o tamanho do grupo:
-    * **Para grupos de 6 a 10 pessoas (Turnos de 7 min):** Total de **15 rodadas de rotação**. (8 rodadas no Bloco 1 + 7 rodadas no Bloco 2). Ideal para maximizar o tempo de cada um no teclado.
-    * **Para grupos de 10 a 20 pessoas (Turnos de 5 min):** Total de **21 rodadas de rotação**. (12 rodadas no Bloco 1 + 9 rodadas no Bloco 2). Garante que todos participem ao menos uma vez como Piloto ou Copiloto.
-  * A cada ciclo (5 ou 7 minutos), soa o alarme: o Piloto volta para a plateia, o Copiloto assume o teclado como Piloto, e uma pessoa da plateia assume o papel de Copiloto.
+O tema será o **desempenho da Seleção Brasileira nas últimas Copas do Mundo**. A ideia é pesquisar fontes de dados, estudar a estrutura dos sites, executar extrações com `requests` e `BeautifulSoup`, organizar as informações e salvar o resultado em um arquivo CSV.
 
 ---
 
-## ⏱️ Cronograma Oficial (09:00 - 11:30)
+## Fonte sugerida
 
-O evento foi estruturado de forma milimétrica para começarmos pontualmente às 09:00 e finalizarmos às 11:30, contando com uma **folga de 12 minutos** para coffee-break e networking.
+A fonte principal sugerida para o dojo é a Wikipédia em português:
 
-| Horário | Atividade | Duração | Descrição |
-| :--- | :--- | :---: | :--- |
-| **09:00 - 09:15** | **Abertura & Introdução** | 15 min | Boas-vindas, explicação da dinâmica Randori, apresentação do desafio e divisão de papéis. |
-| **09:15 - 09:35** | **Round 1: Coleta de dados de páginas web** | 20 min | Inicialização do ambiente virtual (`venv`), instalação de dependências e disparo da primeira requisição HTTP para obter o HTML. |
-| **09:35 - 09:55** | **Round 2: Identificação de tabelas e informações úteis** | 20 min | Mapeamento da estrutura DOM da tabela oficial do campeonato usando BeautifulSoup. |
-| **09:55 - 10:15** | **Round 3: Limpeza e organização dos dados** | 20 min | Iteração sobre as linhas da tabela, captura e higienização dos dados e conversão para tipos corretos. |
-| **10:15 - 10:27** | **☕ Intervalo / Break** | **12 min** | **Folga para café, descanso mental e bate-papo entre os participantes.** |
-| **10:27 - 10:52** | **Round 4: Cálculo de métricas (pontos, saldo de gols e aproveitamento)** | 25 min | Cálculo de Pontos, Saldo de Gols e Aproveitamento (%) e ordenação da classificação sob critérios oficiais de desempate. |
-| **10:52 - 11:12** | **Round 5: Exportação dos dados em CSV ou JSON** | 20 min | Escrita dos dados processados em arquivos físicos JSON e CSV usando codificação UTF-8. |
-| **11:12 - 11:30** | **Retrospectiva & Encerramento** | 18 min | Feedback em grupo (o que deu certo / o que melhorar), fechamento das refatorações e foto oficial. |
-
----
-
-## 🏗️ Detalhamento dos Rounds do Desafio
-
-```mermaid
-graph TD
-    R1[Round 1: Coleta de dados de páginas web] --> R2[Round 2: Identificação de tabelas e informações úteis]
-    R2 --> R3[Round 3: Limpeza e organização dos dados]
-    R3 --> Break{☕ Break de 12 min}
-    Break --> R4[Round 4: Cálculo de métricas e ordenação]
-    R4 --> R5[Round 5: Exportação dos dados em CSV ou JSON]
+```text
+https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA
 ```
 
-### 🔹 Round 1: Coleta de dados de páginas web (09:15 - 09:35)
-* **Objetivo:** Criar a estrutura do ambiente virtual e conseguir obter o HTML bruto de uma URL ou de arquivo local.
-* **Foco:** Biblioteca `requests`.
-* **Atividades:**
-  1. Ativar o ambiente virtual e instalar dependências via `pip install -r requirements.txt`.
-  2. Implementar a função `obter_html` em `src/scraper.py`.
-  3. Fazer com que o script leia de forma inteligente: se receber uma URL (`http...`), faz uma chamada de rede; se receber um caminho local, lê o arquivo `static/parazao.html` diretamente (garantindo que o dojo funcione perfeitamente mesmo offline).
-  4. Rodar o teste correspondente: `PYTHONPATH=. pytest tests/test_scraper.py -k test_obter_html_local`.
-
-### 🔹 Round 2: Identificação de tabelas e informações úteis (09:35 - 09:55)
-* **Objetivo:** Inspecionar a estrutura do documento e mapear a tabela de estatísticas.
-* **Foco:** Biblioteca `beautifulsoup4`.
-* **Atividades:**
-  1. Abrir `static/parazao.html` no navegador e inspecionar a tabela usando as Ferramentas do Desenvolvedor (F12).
-  2. Identificar a tag `table` com o id `tabela-estatisticas`.
-  3. Começar a implementar a função `parsear_tabela` em `src/scraper.py`, buscando o elemento correspondente e encontrando o corpo da tabela (`<tbody>`).
-
-### 🔹 Round 3: Limpeza e organização dos dados (09:55 - 10:15)
-* **Objetivo:** Varrer cada time da tabela e estruturar suas informações básicas em memória.
-* **Foco:** Manipulação de strings, controle de fluxo e casting de tipos.
-* **Atividades:**
-  1. Concluir a função `parsear_tabela` iterando pelas linhas (`tr`) dentro do `tbody`.
-  2. Para cada linha, extrair o texto de cada célula (`td`):
-     - **Coluna 1:** Posição (pode ser ignorada nesse momento, pois será recalculada no Round 4)
-     - **Coluna 2:** Nome do Time (aplicar `.strip()` para limpar espaços em branco desnecessários)
-     - **Colunas 3 a 8:** Jogos, Vitórias, Empates, Derrotas, Gols Pró e Gols Contra.
-  3. Converter as estatísticas numéricas extraídas de string para inteiros (`int`).
-  4. Rodar o teste correspondente para validar o parsing: `PYTHONPATH=. pytest tests/test_scraper.py -k test_parsear_tabela`.
-
-### 🔹 Round 4: Cálculo de métricas (pontos, saldo de gols e aproveitamento) (10:27 - 10:52)
-* **Objetivo:** Processar os dados brutos calculando métricas de classificação esportiva e ordenar os times de forma correta.
-* **Foco:** Lógica matemática e ordenação customizada (`sorted()` com `key`).
-* **Atividades:**
-  1. Implementar a função `calcular_metricas_e_ordenar`.
-  2. Para cada dicionário de time na lista, calcular e adicionar as seguintes chaves:
-     - `pontos` = $(Vitórias \times 3) + Empates$
-     - `saldo_gols` = $Gols\ Pró - Gols\ Contra$
-     - `aproveitamento` = $\frac{Pontos}{Jogos \times 3} \times 100$ (arredondado para 1 casa decimal, ex: `76.7`). Tratar divisão por zero se o time não tiver jogos.
-  3. Ordenar a tabela final seguindo a prioridade oficial de desempate:
-     - **1º critério:** Maior pontuação (`pontos`)
-     - **2º critério:** Melhor saldo de gols (`saldo_gols`)
-     - **3º critério:** Maior número de vitórias (`vitorias`)
-  4. Atribuir a posição final (de 1 a 10) baseada na ordenação obtida.
-  5. Validar o algoritmo rodando o teste: `PYTHONPATH=. pytest tests/test_scraper.py -k test_calcular_metricas_e_ordenar`.
-
-### 🔹 Round 5: Exportação dos dados em CSV ou JSON (10:52 - 11:12)
-* **Objetivo:** Persistir os dados processados e estruturados em disco.
-* **Foco:** Módulos `json` e `csv` nativos do Python.
-* **Atividades:**
-  1. Implementar a função `exportar_dados`.
-  2. Salvar o resultado no formato JSON formatado (`indent=4`) ou em formato de tabela CSV.
-  3. **Atenção:** Utilizar a codificação `utf-8` para garantir que acentos típicos (como em *Caeté* ou *Tuna Luso*) e caracteres especiais sejam gravados perfeitamente.
-  4. Validar os arquivos de saída rodando toda a suíte de testes do projeto: `PYTHONPATH=. pytest`.
+A página possui informações organizadas em tabelas, o que facilita o estudo inicial de web scraping.
 
 ---
 
-## 🛠️ Instruções de Setup
+# Cronograma dos Rounds
 
-Para executar o projeto no seu computador:
+## 09:00 - 09:10
 
-1. **Clonar o Repositório:**
-   ```bash
-   git clone https://github.com/grupy-pa/ii-dojo-de-codigo-web-scraping.git
-   cd ii-dojo-de-codigo-web-scraping
-   ```
+# Abertura do Dojo
 
-2. **Criar e Ativar o Ambiente Virtual:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # No Windows: venv\Scripts\activate
-   ```
+## Objetivo
 
-3. **Instalar Dependências:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Apresentar o tema, explicar a dinâmica do dojo e alinhar o resultado esperado.
 
-4. **Rodar a Suíte de Testes (TDD):**
-   ```bash
-   PYTHONPATH=. pytest
-   ```
+## Explicação
 
-5. **Executar o Script Principal:**
-   ```bash
-   python src/scraper.py
-   ```
+Antes de começar a escrever código, o grupo deve entender o problema: queremos coletar dados sobre o desempenho do Brasil nas últimas Copas do Mundo e transformar essas informações em uma base organizada.
 
----
+## Resultado esperado
 
-## 📧 Modelo de Convocação (E-mail para os Participantes)
+Todos devem entender o objetivo final:
 
-```markdown
-Assunto: 🕸️ Prepare seu setup! II Dojo de Código GruPy Pará: Web Scraping com Python!
-
-Olá, dev!
-
-Está chegando o II Dojo de Código do GruPy Pará! No próximo sábado, às 09:00 pontualmente, nos reuniremos para resolver juntos um desafio prático de Web Scraping (Raspagem de Dados).
-
-Nesta edição, nosso desafio será ler uma tabela esportiva do Campeonato Paraense (Parazão), extrair seus dados estruturadamente, calcular as pontuações e critérios de desempate, e salvar os arquivos prontos em JSON e CSV!
-
-Não se preocupe se você nunca fez scraping ou está começando no Python. O Coding Dojo é um ambiente seguro de aprendizado colaborativo e sem competição, baseado na dinâmica Randori (onde nos revezamos no teclado de tempos em tempos).
-
-🛠️ O QUE VOCÊ PRECISA CONFIGURAR NO SEU NOTEBOOK:
-1. Python 3.8+ instalado.
-2. Git configurado.
-3. Seu editor de código preferido (recomendamos VS Code).
-
-Caso tenha dificuldades em configurar seu ambiente, chegue 15 minutos mais cedo (às 08:45). A comissão organizadora estará disponível para te ajudar!
-
-📍 Detalhes do Evento:
-- Data: Sábado
-- Horário: 09:00h até 11:30h (com folga para coffee-break de 12 minutos!)
-- Link do Repositório: https://github.com/grupy-pa/ii-dojo-de-codigo-web-scraping
-
-Prepare sua curiosidade, traga seu notebook e nos vemos lá!
-
-Abraços,
-Comissão Organizadora - GruPy Pará
+```text
+Encontrar uma fonte de dados
+Estudar a página
+Extrair informações
+Limpar os dados
+Salvar em CSV
 ```
 
 ---
 
-*Feito com ☕ e 🐍 pela comunidade GruPy Pará.*
+## 09:10 - 09:30
+
+# ROUND 1: Pesquisar fontes de dados
+
+## Objetivo
+
+Encontrar páginas que tenham dados sobre o Brasil nas Copas do Mundo.
+
+## Explicação
+
+Web scraping começa antes do código. Primeiro precisamos descobrir onde os dados estão disponíveis e se a fonte é adequada para coleta.
+
+## Tarefas
+
+```text
+Pesquisar páginas sobre o Brasil nas Copas
+Comparar possíveis fontes
+Verificar se os dados estão visíveis na página
+Identificar se existem tabelas ou listas
+Escolher a fonte principal do dojo
+```
+
+## Perguntas para guiar
+
+```text
+O site está em português?
+Os dados aparecem diretamente na página?
+Existe tabela HTML?
+Precisa de login?
+O conteúdo carrega com JavaScript?
+A página parece boa para usar com requests e BeautifulSoup?
+```
+
+## Resultado esperado
+
+Escolher uma fonte principal de dados para a extração.
+
+---
+
+## 09:30 - 09:50
+
+# ROUND 2: Estudar a estrutura do site
+
+## Objetivo
+
+Entender como os dados estão organizados dentro da página.
+
+## Explicação
+
+Depois de escolher a fonte, o grupo deve estudar a estrutura HTML da página. O objetivo é encontrar onde estão as tabelas, linhas, colunas e informações úteis.
+
+## Tarefas
+
+```text
+Abrir a página no navegador
+Usar a opção Inspecionar
+Localizar as tabelas da página
+Identificar quais dados serão coletados
+Anotar os nomes das colunas importantes
+```
+
+## Dados desejados
+
+```text
+Ano
+Fase
+Posição
+Jogos
+Vitórias
+Empates
+Derrotas
+Gols marcados
+Gols sofridos
+```
+
+## Resultado esperado
+
+Saber qual tabela ou seção da página contém os dados que serão raspados.
+
+---
+
+## 09:50 - 10:10
+
+# ROUND 3: Fazer a primeira requisição com requests
+
+## Objetivo
+
+Acessar a página usando Python.
+
+## Explicação
+
+Neste round, o grupo começa a parte prática. Vamos usar a biblioteca `requests` para baixar o HTML da página escolhida.
+
+## Exemplo
+
+```python
+import requests
+
+url = "https://pt.wikipedia.org/wiki/Brasil_na_Copa_do_Mundo_FIFA"
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+resposta = requests.get(url, headers=headers)
+
+print(resposta.status_code)
+print(resposta.text[:500])
+```
+
+## Tarefas
+
+```text
+Fazer a requisição HTTP
+Verificar o status da resposta
+Exibir uma parte do HTML
+Confirmar se a página foi carregada corretamente
+```
+
+## Resultado esperado
+
+A página deve ser acessada com sucesso pelo Python.
+
+---
+
+## 10:10 - 10:30
+
+# ROUND 4: Encontrar as tabelas com BeautifulSoup
+
+## Objetivo
+
+Usar BeautifulSoup para localizar as tabelas da página.
+
+## Explicação
+
+Com o HTML carregado, vamos usar `BeautifulSoup` para navegar pela estrutura da página e encontrar os elementos que contêm os dados.
+
+## Exemplo
+
+```python
+from bs4 import BeautifulSoup
+
+soup = BeautifulSoup(resposta.text, "html.parser")
+
+tabelas = soup.find_all("table")
+
+print(f"Total de tabelas encontradas: {len(tabelas)}")
+```
+
+## Tarefas
+
+```text
+Criar o objeto BeautifulSoup
+Buscar todas as tabelas da página
+Exibir a quantidade de tabelas encontradas
+Inspecionar o conteúdo das primeiras tabelas
+Identificar a tabela correta
+```
+
+## Resultado esperado
+
+Encontrar a tabela que contém os dados do desempenho do Brasil nas Copas.
+
+---
+
+## 10:30 - 10:50
+
+# ROUND 5: Executar a extração dos dados
+
+## Objetivo
+
+Extrair os dados da tabela escolhida.
+
+## Explicação
+
+Neste round, vamos percorrer as linhas da tabela e transformar os dados em uma lista de dicionários.
+
+## Exemplo de estrutura
+
+```python
+dados = []
+
+for linha in linhas:
+    registro = {
+        "ano": "",
+        "fase": "",
+        "jogos": "",
+        "vitorias": "",
+        "empates": "",
+        "derrotas": "",
+        "gols_marcados": "",
+        "gols_sofridos": ""
+    }
+
+    dados.append(registro)
+```
+
+## Tarefas
+
+```text
+Percorrer as linhas da tabela
+Extrair as células de cada linha
+Remover espaços extras
+Criar um dicionário para cada Copa
+Guardar os registros em uma lista
+```
+
+## Resultado esperado
+
+Uma lista com os dados brutos das participações do Brasil nas Copas.
+
+---
+
+## 10:50 - 11:05
+
+# ROUND 6: Limpar e organizar os dados
+
+## Objetivo
+
+Preparar os dados para análise.
+
+## Explicação
+
+Dados extraídos da web geralmente precisam de limpeza. Podemos encontrar quebras de linha, textos extras, símbolos e números em formato de texto.
+
+## Tarefas
+
+```text
+Padronizar nomes das colunas
+Remover quebras de linha
+Remover espaços extras
+Converter números
+Tratar campos vazios
+Filtrar apenas as últimas Copas
+```
+
+## Copas sugeridas para análise
+
+```text
+2006
+2010
+2014
+2018
+2022
+```
+
+## Resultado esperado
+
+Uma base organizada contendo apenas os dados das últimas Copas do Mundo.
+
+---
+
+## 11:05 - 11:20
+
+# ROUND 7: Calcular métricas e salvar em CSV
+
+## Objetivo
+
+Criar métricas simples de desempenho e salvar os dados em CSV.
+
+## Explicação
+
+Depois da limpeza, podemos calcular novas informações para analisar melhor o desempenho do Brasil.
+
+## Métricas sugeridas
+
+```text
+Pontos
+Saldo de gols
+Média de gols marcados
+Média de gols sofridos
+Aproveitamento
+```
+
+## Regras
+
+```text
+Vitória = 3 pontos
+Empate = 1 ponto
+Derrota = 0 pontos
+```
+
+## Fórmulas
+
+```text
+pontos = (vitórias * 3) + empates
+
+saldo_de_gols = gols_marcados - gols_sofridos
+
+aproveitamento = pontos / (jogos * 3) * 100
+```
+
+## Exemplo para salvar em CSV
+
+```python
+import pandas as pd
+
+df = pd.DataFrame(dados)
+
+df.to_csv("brasil_ultimas_copas.csv", index=False, encoding="utf-8")
+```
+
+## Resultado esperado
+
+Gerar um arquivo:
+
+```text
+brasil_ultimas_copas.csv
+```
+
+contendo os dados tratados e as métricas calculadas.
+
+---
+
+## 11:20 - 11:30
+
+# Encerramento e retrospectiva
+
+## Objetivo
+
+Revisar o que foi feito e discutir melhorias.
+
+## Explicação
+
+O encerramento serve para consolidar o aprendizado. O grupo deve refletir sobre o processo completo: desde a pesquisa da fonte até a geração do CSV.
+
+## Perguntas para discussão
+
+```text
+A fonte escolhida foi boa?
+O que facilitou a extração?
+O que dificultou a extração?
+O que poderia quebrar esse scraper no futuro?
+Como deixar o código mais organizado?
+Como salvar também em JSON?
+Como transformar esses dados em gráficos?
+Como criar uma API com esses dados?
+```
+
+## Resultado esperado
+
+O grupo finaliza o dojo com um arquivo CSV gerado e uma visão clara do processo de web scraping.
+
+---
+
+# Resultado final esperado
+
+Ao final do dojo, o grupo terá praticado:
+
+```text
+Pesquisa de fontes de dados
+Estudo da estrutura de sites
+Uso de requests
+Uso de BeautifulSoup
+Extração de tabelas HTML
+Limpeza de dados
+Cálculo de métricas
+Exportação para CSV
+```
+
+O objetivo principal é entender que web scraping não é apenas extrair dados, mas seguir um processo completo: pesquisar, avaliar, coletar, limpar, organizar e salvar informações de forma útil.
