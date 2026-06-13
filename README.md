@@ -670,14 +670,17 @@ saldo_de_gols = gols_marcados - gols_sofridos
 aproveitamento = pontos / (jogos * 3) * 100
 ```
 
-## Exemplo para salvar em CSV
+## Exemplo para salvar em CSV (Biblioteca Padrão)
 
 ```python
-import pandas as pd
+import csv
 
-df = pd.DataFrame(dados)
+campos = ["ano", "fase", "posicao", "jogos", "vitorias", "empates", "derrotas", "gols_pro", "gols_contra", "pontos", "saldo_gols", "aproveitamento"]
 
-df.to_csv("brasil_ultimas_copas.csv", index=False, encoding="utf-8")
+with open("brasil_copas.csv", mode="w", encoding="utf-8", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=campos)
+    writer.writeheader()
+    writer.writerows(dados)
 ```
 
 ## Resultado esperado
@@ -685,7 +688,7 @@ df.to_csv("brasil_ultimas_copas.csv", index=False, encoding="utf-8")
 Gerar um arquivo:
 
 ```text
-brasil_ultimas_copas.csv
+brasil_copas.csv
 ```
 
 contendo os dados tratados e as métricas calculadas.
